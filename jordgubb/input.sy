@@ -151,7 +151,6 @@ mouseButtonDown :: fn button ->
     love.mouse.isDown' mouseButtonToInt(button)
 end
 
-
 mousePos :: fn ->
     x :: love.mouse.getX'
     y :: love.mouse.getY'

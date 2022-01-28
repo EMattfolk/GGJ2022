@@ -87,6 +87,7 @@ start :: fn do
         end
     end
 
+    pressed := false
     update_board :: fn pos, scale, state ->
         top_left_offset :: pos + (13., 13.)
         size :: (grid_size, grid_size) * scale
@@ -94,10 +95,10 @@ start :: fn do
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         coord :: if 0 <= active[0] and active[0] < 8
                 and 0 <= active[1] and active[1] < 8 do
-            if state.turn == 0 and love.mouse.isDown' 1 do
+            if state.turn == 0 and pressed do
                 place_piece' board, active, Piece.White
                 state.turn = 1
-            else if state.turn == 1 and love.mouse.isDown' 1 do
+            else if state.turn == 1 and pressed do
                 place_piece' board, active, Piece.Black
                 state.turn = 0
             end
@@ -115,6 +116,7 @@ start :: fn do
     state := State { coord: Maybe.Nothing, turn: 0 }
     love.update = fn delta do
         state = update_board' pos, scale, state
+        pressed = false
     end
 
     love.draw = fn do
@@ -125,5 +127,9 @@ start :: fn do
     end
 
     love.keyreleased = fn key, scancode do
+    end
+
+    love.mousepressed = fn x, y, button, istouch, presses do
+        pressed = button == 1
     end
 end

@@ -170,6 +170,7 @@ Love :: blob {
     update: fn float -> void,
     keypressed: fn str, str, bool -> void,
     keyreleased: fn str, str -> void,
+    mousepressed: fn float, float, int, bool, int -> void,
     resize: fn int, int -> void,
 
     gamepadaxis: fn LoveJoystick, str, float -> void,
