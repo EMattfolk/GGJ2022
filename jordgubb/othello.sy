@@ -4,15 +4,57 @@ from gfx use (stableRandomColor as rcol)
 use input
 use sfx
 
+Piece :: enum
+    Black,
+    White,
+    Empty,
+end
+
 start :: fn do
 
     aFont :: gfx.createFont(love.graphics.getFont())
-    img :: gfx.newImage' "res/sylt.png"
+    board_img :: gfx.newImage' "res/board.png"
+    black_img :: gfx.newImage' "res/black.png"
+    white_img :: gfx.newImage' "res/white.png"
+
+    board := [ ]
+
+    y := 0
+    loop y < 8 do
+        board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
+        y += 1
+    end
+
+    board[3][3] = Piece.Black
+    board[4][3] = Piece.White
+    board[3][4] = Piece.White
+    board[4][4] = Piece.Black
+
+    draw_board :: fn pos, scale do
+        board_img.draw' pos, 0.0, scale
+        x := 0
+        loop x < 8 do
+            y := 0
+            loop y < 8 do
+
+                offset := (13., 13.) + (31. * as_float(x), 31. * as_float(y)) * scale
+                case board[y][x] do
+                    Black -> black_img.draw(pos + offset, 0.0, scale) end
+                    White -> white_img.draw(pos + offset, 0.0, scale) end
+                    Empty -> end
+                end
+
+                y += 1
+            end
+            x += 1
+        end
+    end
 
     love.update = fn delta do
     end
 
     love.draw = fn do
+        draw_board' (0.0, 0.0), (2., 2.)
     end
 
     love.keypressed = fn key, scancode, repeat do
