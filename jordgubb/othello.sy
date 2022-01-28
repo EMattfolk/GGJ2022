@@ -102,9 +102,13 @@ start :: fn do
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         coord :: if 0 <= active[0] and active[0] < 8
                 and 0 <= active[1] and active[1] < 8 do
-            if state.turn == 0 and pressed and place_piece' board, active, Piece.White do
+            if state.turn == 0
+            and pressed
+            and place_piece' board, active, Piece.White do
                 state.turn = 1
-            else if state.turn == 1 and pressed and place_piece' board, active, Piece.Black do
+            else if state.turn == 1
+                 and pressed
+                 and place_piece' board, active, Piece.Black do
                 state.turn = 0
             end
             Maybe.Just active
