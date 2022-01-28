@@ -1,12 +1,15 @@
-run: main.lua
+TARGET=main.lua
+SOURCE=othello.sy
+
+run: $(TARGET)
 	love .
 
-main.lua: main.sy *.sy | sylt
+$(TARGET): $(SOURCE) *.sy | sylt
 	../target/debug/sylt -o $@ $<
 
 sylt:
 	cd .. && cargo b
 
 clean:
-	rm -rf main.lua
+	rm -rf $(TARGET)
 

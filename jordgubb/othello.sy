@@ -1,0 +1,23 @@
+from love use love
+use gfx
+from gfx use (stableRandomColor as rcol)
+use input
+use sfx
+
+start :: fn do
+
+    aFont :: gfx.createFont(love.graphics.getFont())
+    img :: gfx.newImage' "res/sylt.png"
+
+    love.update = fn delta do
+    end
+
+    love.draw = fn do
+    end
+
+    love.keypressed = fn key, scancode, repeat do
+    end
+
+    love.keyreleased = fn key, scancode do
+    end
+end
