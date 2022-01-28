@@ -25,6 +25,16 @@ place_piece :: fn board, coord, piece do
     board[coord[1]][coord[0]] = piece
 end
 
+Maybe :: enum
+    Just *
+    Nothing
+end
+
+State :: blob {
+    turn: int,
+    coord: Maybe, // (Int, Int)
+}
+
 start :: fn do
 
     aFont :: gfx.createFont(love.graphics.getFont())
@@ -46,7 +56,7 @@ start :: fn do
     board[3][4] = Piece.White
     board[4][4] = Piece.Black
 
-    draw_board :: fn pos, scale do
+    draw_board :: fn pos, scale, state do
         top_left_offset :: pos + (13., 13.)
         size :: (grid_size, grid_size) * scale
         board_img.draw' pos, 0.0, scale
@@ -67,23 +77,44 @@ start :: fn do
         end
 
         active :: screen_to_board' top_left_offset, size, input.mousePos()
-        if 0 <= active[0] and active[0] < 8
-          and 0 <= active[1] and active[1] < 8 do
-            // TODO(ed): We need to fix this
-            offset :: board_to_screen' top_left_offset, size, active
-            gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
-
-            if love.mouse.isDown' 1 do
-                place_piece' board, active, Piece.White
+        case state.coord do
+            Just coord ->
+                // TODO(ed): We need to fix this
+                offset :: board_to_screen' top_left_offset, size, active
+                gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
             end
+            else do end
         end
     end
 
+    update_board :: fn pos, scale, state ->
+        top_left_offset :: pos + (13., 13.)
+        size :: (grid_size, grid_size) * scale
+
+        active :: screen_to_board' top_left_offset, size, input.mousePos()
+        coord :: if 0 <= active[0] and active[0] < 8
+                and 0 <= active[1] and active[1] < 8 do
+            if love.mouse.isDown' 1 do
+                place_piece' board, active, Piece.White
+            end
+            Maybe.Just active
+        else
+            Maybe.Nothing
+        end
+
+        State { coord: coord, turn: state.turn }
+    end
+
+    pos :: (0.0, 0.0)
+    scale :: (2., 2.)
+
+    state := State { coord: Maybe.Nothing, turn: 0 }
     love.update = fn delta do
+        state = update_board' pos, scale, state
     end
 
     love.draw = fn do
-        draw_board' (0.0, 0.0), (2., 2.)
+        draw_board' pos, scale, state
     end
 
     love.keypressed = fn key, scancode, repeat do
