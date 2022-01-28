@@ -98,7 +98,7 @@ start :: fn do
     board[4][4] = Piece.Black
 
     draw_board :: fn pos, scale, state do
-        top_left_offset :: pos + (13., 13.)
+        top_left_offset :: pos + (7., 7.) * scale
         size :: (grid_size, grid_size) * scale
         board_img.draw' pos, 0.0, scale
         x := 0
@@ -120,9 +120,10 @@ start :: fn do
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         case state.coord do
             Just coord ->
-                // TODO(ed): We need to fix this
                 offset :: board_to_screen' top_left_offset, size, active
-                gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
+                gfx.drawCircle( gfx.rgba(0., 0., 0., 0.2)
+                              , offset + size * (0.5, 0.5) - (2., 2.) * scale
+                              , (size[0] - 5.0) / 4)
             end
             else do end
         end
