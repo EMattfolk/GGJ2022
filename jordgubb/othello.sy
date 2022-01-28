@@ -63,6 +63,9 @@ place_piece :: fn board, coord, piece ->
         flip_if_matches' board, coord + dir, piece, dir
     end
 
+    audio : sfx.Sound : list.random_choice(place_sfx)
+    audio.playp' (0.4, 0.1), (0.9, 1.1)
+
     success
 end
 
@@ -76,7 +79,17 @@ State :: blob {
     coord: Maybe, // (Int, Int)
 }
 
+place_sfx := []
+
 start :: fn do
+
+    place_sfx = [
+        sfx.newSound("res/place001.wav", false, sfx.SoundType.Static),
+        sfx.newSound("res/place002.wav", false, sfx.SoundType.Static),
+        sfx.newSound("res/place003.wav", false, sfx.SoundType.Static),
+        sfx.newSound("res/place004.wav", false, sfx.SoundType.Static),
+        sfx.newSound("res/place005.wav", false, sfx.SoundType.Static),
+    ]
 
     aFont :: gfx.createFont(love.graphics.getFont())
     board_img :: gfx.newImage' "res/board.png"
@@ -84,7 +97,7 @@ start :: fn do
     white_img :: gfx.newImage' "res/white.png"
 
 
-    board := [ ]
+    board :: [ ]
 
     y := 0
     loop y < 8 do
