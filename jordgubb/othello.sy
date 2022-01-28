@@ -10,7 +10,20 @@ Piece :: enum
     Empty,
 end
 
+other_color :: fn piece ->
+    case piece do
+        Black -> Piece.Black end
+        White -> Piece.White end
+        Empty -> <!> end
+    end
+end
+
 grid_size :: 31.
+
+valid_coord :: fn coord ->
+    (0 <= coord[0] and coord[0] < 8 and
+     0 <= coord[1] and coord[1] < 8)
+end
 
 screen_to_board :: fn offset, size, mouseCoords ->
     shifted :: (mouseCoords - offset) * (1 / size[0], 1 / size[1])
@@ -21,8 +34,21 @@ board_to_screen :: fn offset, size, coord ->
     offset + size * (as_float(coord[0]), as_float(coord[1]))
 end
 
+flip_if_matches :: fn board, coord, piece, dir ->
+    if (not valid_coord(coord))
+    or board[coord[1]][coord[0]] == Piece.Empty do ret false end
+
+    if board[coord[1]][coord[0]] == other_color(piece)
+    or flip_if_matches(board, coord + dir, piece, dir) do
+        board[coord[1]][coord[0]] = piece
+        true
+    else
+        false
+    end
+end
+
 place_piece :: fn board, coord, piece ->
-    case board[coord[1]][coord[0]] do
+    success :: case board[coord[1]][coord[0]] do
         Empty ->
             board[coord[1]][coord[0]] = piece
             true
@@ -30,6 +56,14 @@ place_piece :: fn board, coord, piece ->
         White -> false end
         Black -> false end
     end
+    if not success do ret success end
+
+    dirs :: [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1)]
+    dirs -> for_each' fn dir do
+        flip_if_matches' board, coord + dir, piece, dir
+    end
+
+    success
 end
 
 Maybe :: enum
