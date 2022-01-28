@@ -10,12 +10,24 @@ Piece :: enum
     Empty,
 end
 
+grid_size :: 31.
+
+screen_to_board :: fn offset, size, mouseCoords ->
+    shifted :: (mouseCoords - offset) * (1 / size[0], 1 / size[1])
+    (floor(shifted[0]), floor(shifted[1]))
+end
+
+board_to_screen :: fn offset, size, coord ->
+    offset + size * (as_float(coord[0]), as_float(coord[1]))
+end
+
 start :: fn do
 
     aFont :: gfx.createFont(love.graphics.getFont())
     board_img :: gfx.newImage' "res/board.png"
     black_img :: gfx.newImage' "res/black.png"
     white_img :: gfx.newImage' "res/white.png"
+
 
     board := [ ]
 
@@ -31,22 +43,30 @@ start :: fn do
     board[4][4] = Piece.Black
 
     draw_board :: fn pos, scale do
+        top_left_offset :: pos + (13., 13.)
+        size :: (grid_size, grid_size) * scale
         board_img.draw' pos, 0.0, scale
         x := 0
         loop x < 8 do
             y := 0
             loop y < 8 do
-
-                offset := (13., 13.) + (31. * as_float(x), 31. * as_float(y)) * scale
+                offset :: board_to_screen' top_left_offset, size, (x, y)
                 case board[y][x] do
-                    Black -> black_img.draw(pos + offset, 0.0, scale) end
-                    White -> white_img.draw(pos + offset, 0.0, scale) end
+                    Black -> black_img.draw(offset, 0.0, scale) end
+                    White -> white_img.draw(offset, 0.0, scale) end
                     Empty -> end
                 end
 
                 y += 1
             end
             x += 1
+        end
+
+        active :: screen_to_board' top_left_offset, size, input.mousePos()
+        if 0 <= active[0] and active[0] < 8
+          and 0 <= active[1] and active[1] < 8 do
+            offset :: board_to_screen' top_left_offset, size, active
+            gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
         end
     end
 
