@@ -21,6 +21,10 @@ board_to_screen :: fn offset, size, coord ->
     offset + size * (as_float(coord[0]), as_float(coord[1]))
 end
 
+place_piece :: fn board, coord, piece do
+    board[coord[1]][coord[0]] = piece
+end
+
 start :: fn do
 
     aFont :: gfx.createFont(love.graphics.getFont())
@@ -68,6 +72,10 @@ start :: fn do
             // TODO(ed): We need to fix this
             offset :: board_to_screen' top_left_offset, size, active
             gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
+
+            if love.mouse.isDown' 1 do
+                place_piece' board, active, Piece.White
+            end
         end
     end
 
