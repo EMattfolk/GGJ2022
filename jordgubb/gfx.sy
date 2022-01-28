@@ -1,5 +1,6 @@
 use love as l
 from love use love
+from common use unsafe_force
 
 Color :: blob {
     red: float,
@@ -67,7 +68,7 @@ drawRect :: fn color, p, dim do
 end
 
 drawRectCentered :: fn color, p, dim do
-    drawRect' color, p - dim / (2., 2.), dim
+    drawRect' color, p - dim * (.5, .5), dim
 end
 
 drawRectOutline :: fn color, p, dim do
@@ -76,7 +77,7 @@ drawRectOutline :: fn color, p, dim do
 end
 
 drawRectCenteredOutline :: fn color, p, dim do
-    drawRectOutline' color, p - dim / (2., 2.), dim
+    drawRectOutline' color, p - dim * (.5, .5), dim
 end
 
 Alignment :: enum
@@ -87,12 +88,10 @@ end
 
 alignmentToStr :: fn a ->
     case a do
-        Center ret "center"
-        Left ret "left"
-        Right ret "right"
-        else do <!> end
+        Center -> "center" end
+        Left -> "left" end
+        Right -> "right" end
     end
-    ret ""
 end
 
 Font :: blob {
@@ -211,7 +210,7 @@ newImplicitSpriteSheet :: fn img: Image, spriteDim: (int, int) ->
     // TODO(ed): Maybe add a divisibility test here?
     for_range' 0, as_int(img.getWidth()), w, fn x -> do
         for_range' 0, as_int(img.getHeight()), h, fn y -> do
-            quads -> push' ((x, y), (w, h))
+            quads -> list.push' ((x, y), (w, h))
         end
     end
     newSpriteSheetFromQuads' img, quads
@@ -235,7 +234,7 @@ newSpriteSheetFromQuads :: fn img: Image, quads: [((int, int), (int, int))] ->
         end,
         drawCenterd: fn tint, sprite, pos, rot, scale do
             setColor' tint
-            x: fn l.ImageData, l.Quad, float, float, float, float, float, int, int -> void: unsafe_force' love.graphics.draw
+            x: fn l.ImageData, l.Quad, float, float, float, float, float, float, float -> void: unsafe_force' love.graphics.draw
             lq :: lquads[sprite]
             q :: quads[sprite]
             x' img.img, lq, pos[0], pos[1], rot, scale[0], scale[1], q[1][0] / 2, q[1][1] / 2

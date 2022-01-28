@@ -1,5 +1,6 @@
 use love as l
 from love use love
+from common use unsafe_force
 
 Sound :: blob {
     source: l.Source,
@@ -18,11 +19,9 @@ end
 
 soundTypeToStr :: fn ty: SoundType -> str
     case ty do
-        Static ret "static"
-        Stream ret "stream"
-        else do <!> end
+        Static -> "static" end
+        Stream -> "stream" end
     end
-    ret ""
 end
 
 random :: fn lo, hi ->
