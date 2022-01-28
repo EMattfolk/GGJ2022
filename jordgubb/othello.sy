@@ -65,6 +65,7 @@ start :: fn do
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         if 0 <= active[0] and active[0] < 8
           and 0 <= active[1] and active[1] < 8 do
+            // TODO(ed): We need to fix this
             offset :: board_to_screen' top_left_offset, size, active
             gfx.drawCircle' gfx.rgba(0., 0., 0., 0.2), offset + size * (0.5, 0.5), (size[0] - 5.0) / 2
         end
