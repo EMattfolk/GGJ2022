@@ -106,7 +106,8 @@ start :: fn do
         sfx.newSound("res/place005.wav", false, sfx.SoundType.Static),
     ]
 
-    bigFont :: gfx.newFont("res/LibreBaskerville-Italic.ttf", 50)
+    bigFont :: gfx.newFont("res/LibreBaskerville-Italic.ttf", 100)
+    smallFont :: gfx.newFont("res/LibreBaskerville-Italic.ttf", 30)
     board_img :: gfx.newImage' "res/board.png"
     black_img :: gfx.newImage' "res/black.png"
     white_img :: gfx.newImage' "res/white.png"
@@ -191,7 +192,8 @@ start :: fn do
 
     love.draw = fn do
         draw_board' pos, scale, state
-        bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
+        // bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
+        // smallFont.drawText' gfx.rgb(1., 1., 1.), "A game of jelly", (110.0, 210.0)
     end
 
     love.keypressed = fn key, scancode, repeat do
