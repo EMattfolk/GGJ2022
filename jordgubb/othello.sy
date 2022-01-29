@@ -278,6 +278,9 @@ start :: fn do
                 end
             end
             Menu ->
+                text_pos :: (100.0, 100.0)
+                bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
+                smallFont.drawText' gfx.rgb(1., 1., 1.), "Press any button to start", text_pos + (10.0, 110.0)
             end
         end
     end
@@ -287,9 +290,7 @@ start :: fn do
             Game state ->
             end
             Menu ->
-                if key == "space" or key == "return" do
-                    scene = Scene.Game state
-                end
+                scene = Scene.Game state
             end
         end
     end
@@ -298,6 +299,13 @@ start :: fn do
     end
 
     love.mousepressed = fn x, y, button, istouch, presses do
-        pressed = button == 1
+        case scene do
+            Game state ->
+                pressed = button == 1
+            end
+            Menu ->
+                scene = Scene.Game state
+            end
+        end
     end
 end
