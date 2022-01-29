@@ -157,6 +157,7 @@ start :: fn do
     black_img :: gfx.newImage' "res/black.png"
     white_img :: gfx.newImage' "res/white.png"
 
+    // TODO[et]: Move this into state
     board :: [ ]
 
     y := 0
