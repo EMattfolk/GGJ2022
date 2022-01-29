@@ -138,6 +138,7 @@ Image :: blob {
     img: *,
     getWidth: fn -> float,
     getHeight: fn -> float,
+    getSize: fn -> (float, float),
     draw: fn (float, float), float, (float, float) -> void,
     drawTinted: fn Color, (float, float), float, (float, float) -> void,
     drawCentered: fn (float, float), float, (float, float) -> void,
@@ -168,6 +169,7 @@ newImage :: fn filepath: str -> Image
         img: img,
         getWidth: fn -> img.getWidth' img end,
         getHeight: fn -> img.getHeight' img end,
+        getSize: fn -> (img.getWidth(img), img.getHeight(img)) end,
         draw: fn pos, rot, scale do
             drawImage' rgb(1., 1., 1.), img, pos, rot, scale
         end,
