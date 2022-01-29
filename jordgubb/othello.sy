@@ -41,6 +41,19 @@ valid_placement :: fn board, coord ->
     end)
 end
 
+board_is_full :: fn board ->
+    x := 0
+    loop x < 8 do
+        y := 0
+        loop y < 8 do
+            if board[y][x] == Piece.Empty do ret false end
+            y += 1
+        end
+        x += 1
+    end
+    ret true
+end
+
 screen_to_board :: fn offset, size, mouseCoords ->
     shifted :: (mouseCoords - offset) * (1 / size[0], 1 / size[1])
     (floor(shifted[0]), floor(shifted[1]))
@@ -192,8 +205,10 @@ start :: fn do
 
     love.draw = fn do
         draw_board' pos, scale, state
-        // bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
-        // smallFont.drawText' gfx.rgb(1., 1., 1.), "A game of jelly", (110.0, 210.0)
+        if board_is_full' board do
+            bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
+            smallFont.drawText' gfx.rgb(1., 1., 1.), "A game of jelly", (110.0, 210.0)
+        end
     end
 
     love.keypressed = fn key, scancode, repeat do
