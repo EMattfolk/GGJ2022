@@ -72,14 +72,25 @@ board_place :: fn state, coord, piece, stagger ->
     state.board[y][x] = piece
 end
 
-valid_placement :: fn board, coord ->
+valid_placement :: fn board, coord, piece ->
+    other :: if piece == Piece.Black do Piece.White else Piece.Black end
     (valid_coord(coord)
      and board_at(board, coord) == Piece.Empty
      and any' dirs, fn delta ->
         p :: coord + delta
-        valid_coord(p) and board_at(board, p) != Piece.Empty
+        valid_coord(p) and board_at(board, p) == other and exists_in_dir(board, p, delta, piece)
+     end)
+end
+
+exists_in_dir :: fn board, coord, dir, piece ->
+    p := coord
+    loop valid_coord(p) do
+        if board_at(board, p) == piece do
+            ret true
+        end
+        p += dir
     end
-   )
+    false
 end
 
 board_is_full :: fn board ->
@@ -229,15 +240,11 @@ start :: fn do
         size :: (grid_size, grid_size) * scale
 
         active :: screen_to_board' top_left_offset, size, input.mousePos()
-        coord :: if valid_placement' state.board, active do
-            if state.turn == 0
-            and pressed
-            and place_piece' state, active, Piece.White do
-                state.turn = 1
-            else if state.turn == 1
-                 and pressed
-                 and place_piece' state, active, Piece.Black do
-                state.turn = 0
+        to_place :: if state.turn == 0 do Piece.Black else Piece.White end
+        coord :: if valid_placement' state.board, active, to_place do
+            if pressed
+            and place_piece' state, active, to_place do
+                state.turn = 1 - state.turn
             end
             Maybe.Just active
         else
