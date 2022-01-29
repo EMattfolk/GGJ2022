@@ -84,7 +84,7 @@ end
 
 exists_in_dir :: fn board, coord, dir, piece ->
     p := coord
-    loop valid_coord(p) do
+    loop valid_coord(p) and board_at(board, p) != Piece.Empty do
         if board_at(board, p) == piece do
             ret true
         end
