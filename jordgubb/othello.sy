@@ -226,6 +226,7 @@ start :: fn do
     love.draw = fn do
         draw_board' pos, scale, state
         if board_is_full' board do
+            gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
             bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
             smallFont.drawText' gfx.rgb(1., 1., 1.), as_str(count_pieces' board), (110.0, 210.0)
         end
