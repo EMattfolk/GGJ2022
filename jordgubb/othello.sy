@@ -213,6 +213,8 @@ start :: fn do
         sfx.newSound("res/place005.wav", false, sfx.SoundType.Static),
     ]
 
+    sfx.newSound("res/boo.ogg", true, sfx.SoundType.Stream).playp' (0.1, 0.0), (1.0, 0.0)
+
     piece_img :: gfx.newImage' "res/piece.png"
     piece_ss :: gfx.newImplicitSpriteSheet' piece_img, (26, 26)
 
