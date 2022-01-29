@@ -163,6 +163,7 @@ end
 
 newImage :: fn filepath: str -> Image
     img : l.ImageData : love.graphics.newImage' filepath
+    img.setFilter(img, "nearest", "nearest")
     Image {
         img: img,
         getWidth: fn -> img.getWidth' img end,

@@ -29,6 +29,7 @@ ImageData :: blob {
     _001_unique_type: int,
     getWidth: fn * -> float,
     getHeight: fn * -> float,
+    setFilter: fn *, str, str -> void,
 }
 Quad :: blob { _003_unique_type: int, }
 Font :: blob { _004_unique_type: int, }
