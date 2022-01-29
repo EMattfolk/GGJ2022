@@ -237,10 +237,9 @@ start :: fn do
             y += 1
         end
 
-        active :: screen_to_board' top_left_offset, size, input.mousePos()
         case state.coord do
             Just coord ->
-                offset :: board_to_screen' top_left_offset, size, active
+                offset :: board_to_screen' top_left_offset, size, coord
                 to_place :: if state.turn == 0 do Piece.Black else Piece.White end
                 color :: gfx.rgba(1.0, 1.0, 1.0, 0.5)
                 case to_place do
@@ -264,8 +263,10 @@ start :: fn do
             if pressed
             and place_piece' state, active, to_place do
                 state.turn = 1 - state.turn
+                Maybe.Nothing
+            else
+                Maybe.Just active
             end
-            Maybe.Just active
         else
             Maybe.Nothing
         end
@@ -293,11 +294,7 @@ start :: fn do
 
     scale :: (2., 2.)
     center :: (gfx.screenSizef() - board_img.getSize() * scale) * (0.5, 0.5)
-    pos :: fn ->
-        t :: 0.2 * love.timer.getTime'
-        r :: 5.
-        center + ((cos(t), sin(t)) - (.5, .5)) * (r, r)
-    end
+    pos :: center + (0., 10.)
 
     state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0 }
 
@@ -319,7 +316,7 @@ start :: fn do
     love.update = fn delta do
         case scene do
             Game state ->
-                state :: update_board' delta, pos(), scale, state
+                state :: update_board' delta, pos, scale, state
                 scene = Scene.Game state // Update the state
             end
             Menu -> end
@@ -330,7 +327,7 @@ start :: fn do
     love.draw = fn do
         case scene do
             Game state ->
-                draw_board' pos(), scale, state
+                draw_board' pos, scale, state
                 if board_is_full' state.board do
                     text_pos :: (100.0, 100.0)
 
