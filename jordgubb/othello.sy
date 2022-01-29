@@ -231,7 +231,6 @@ start :: fn do
             gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
             bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
             num_pieces :: count_pieces' board
-            print' num_pieces
             message :: if num_pieces[0] == num_pieces[1] do
                 "Tie!"
             else do if num_pieces[0] > num_pieces[1] do
