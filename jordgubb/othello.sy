@@ -54,6 +54,26 @@ board_is_full :: fn board ->
     ret true
 end
 
+count_pieces :: fn board ->
+    blacks := 0
+    whites := 0
+    x := 0
+    loop x < 8 do
+        y := 0
+        loop y < 8 do
+            if board[y][x] == Piece.White do
+                whites += 1
+            end
+            if board[y][x] == Piece.Black do
+                blacks += 1
+            end
+            y += 1
+        end
+        x += 1
+    end
+    (blacks, whites)
+end
+
 screen_to_board :: fn offset, size, mouseCoords ->
     shifted :: (mouseCoords - offset) * (1 / size[0], 1 / size[1])
     (floor(shifted[0]), floor(shifted[1]))
@@ -207,7 +227,7 @@ start :: fn do
         draw_board' pos, scale, state
         if board_is_full' board do
             bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
-            smallFont.drawText' gfx.rgb(1., 1., 1.), "A game of jelly", (110.0, 210.0)
+            smallFont.drawText' gfx.rgb(1., 1., 1.), as_str(count_pieces' board), (110.0, 210.0)
         end
     end
 
