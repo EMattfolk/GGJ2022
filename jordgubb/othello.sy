@@ -386,7 +386,7 @@ start :: fn do
             Menu ->
                 text_pos :: (100.0, 100.0)
                 bigFont.drawText' gfx.white, "Othello", text_pos
-                smallFont.drawText' gfx.white, "Press any button to start", text_pos + (10.0, 110.0)
+                smallFont.drawText' gfx.white, "Press any button to start, 'a' for AI", text_pos + (10.0, 110.0)
             end
         end
     end
