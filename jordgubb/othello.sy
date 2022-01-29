@@ -226,9 +226,13 @@ start :: fn do
         case state.coord do
             Just coord ->
                 offset :: board_to_screen' top_left_offset, size, active
-                gfx.drawCircle( gfx.rgba(0., 0., 0., 0.2)
-                              , offset + size * (0.5, 0.5) - (2., 2.) * scale
-                              , (size[0] - 5.0) / 4)
+                to_place :: if state.turn == 0 do Piece.Black else Piece.White end
+                color :: gfx.rgba(1.0, 1.0, 1.0, 0.5)
+                case to_place do
+                    Black -> piece_ss.draw' color, 0, offset, 0.0, scale end
+                    White -> piece_ss.draw' color, 5, offset, 0.0, scale end
+                    Empty -> end
+                end
             end
             else do end
         end
