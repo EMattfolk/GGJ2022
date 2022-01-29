@@ -50,7 +50,7 @@ board_at :: fn board, coord ->
     board[coord[1]][coord[0]]
 end
 
-board_place :: fn state, coord, piece, stagger ->
+board_place :: fn state: State, coord, piece, stagger ->
     x :: coord[0]
     y :: coord[1]
     current :: state.board[y][x]
@@ -296,20 +296,24 @@ start :: fn do
     center :: (gfx.screenSizef() - board_img.getSize() * scale) * (0.5, 0.5)
     pos :: center + (0., 10.)
 
-    state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0 }
+    inital_state :: fn ->
+        state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0 }
+        y := 0
+        loop y < 8 do
+            state.board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
+                                ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
+            state.animation -> list.push' [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            y += 1
+        end
+        board_place' state, (3, 3), Piece.Black, 0.0
+        board_place' state, (4, 3), Piece.White, 0.0
+        board_place' state, (3, 4), Piece.White, 0.0
+        board_place' state, (4, 4), Piece.Black, 0.0
 
-    y := 0
-    loop y < 8 do
-        state.board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
-                            ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
-        state.animation -> list.push' [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        y += 1
+        state
     end
 
-    board_place' state, (3, 3), Piece.Black, 0.0
-    board_place' state, (4, 3), Piece.White, 0.0
-    board_place' state, (3, 4), Piece.White, 0.0
-    board_place' state, (4, 4), Piece.Black, 0.0
+    state := inital_state'
 
     scene := Scene.Menu
 
@@ -331,7 +335,7 @@ start :: fn do
                 if board_is_full' state.board do
                     text_pos :: (100.0, 100.0)
 
-                    gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
+                    gfx.drawRect' gfx.rgba(0., 0., 0., 0.8), (0., 0.), gfx.screenSizef'
                     bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
                     num_pieces :: count_pieces' state.board
                     message :: if num_pieces[0] == num_pieces[1] do
@@ -342,13 +346,17 @@ start :: fn do
                             "White wins!"
                         end
                     end
-                    smallFont.drawText' gfx.rgb(1., 1., 1.), message, text_pos + (10.0, 110.0)
+                    message :: message
+                    smallFont.drawText' gfx.white, message, text_pos + (10.0, 110.0)
+
+                    center :: gfx.screenSizef() * (0.5, 0.5)
+                    smallFont.drawTextF' gfx.white, "Press any button to restart", center - (250., 0.), gfx.Alignment.Center, 500.
                 end
             end
             Menu ->
                 text_pos :: (100.0, 100.0)
-                bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
-                smallFont.drawText' gfx.rgb(1., 1., 1.), "Press any button to start", text_pos + (10.0, 110.0)
+                bigFont.drawText' gfx.white, "Othello", text_pos
+                smallFont.drawText' gfx.white, "Press any button to start", text_pos + (10.0, 110.0)
             end
         end
     end
@@ -356,8 +364,13 @@ start :: fn do
     love.keypressed = fn key, scancode, repeat do
         case scene do
             Game state ->
+                if board_is_full' state.board do
+                    state :: inital_state'
+                    scene = Scene.Game state
+                end
             end
             Menu ->
+                state :: inital_state'
                 scene = Scene.Game state
             end
         end
@@ -370,8 +383,13 @@ start :: fn do
         case scene do
             Game state ->
                 pressed = button == 1
+                if board_is_full' state.board do
+                    state :: inital_state'
+                    scene = Scene.Game state
+                end
             end
             Menu ->
+                state :: inital_state'
                 scene = Scene.Game state
             end
         end
