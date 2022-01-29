@@ -14,6 +14,8 @@ clearShader :: fn do
     x'
 end
 
+white :: rgb' 1., 1., 1.
+
 // NOTE(ed): Might be nice to convert HSL to RGB?
 rgb :: fn r, g, b -> Color
     Color { red: r, green: g, blue: b, alpha: 1. }
