@@ -43,10 +43,13 @@ board_place :: fn board, coord, piece ->
 end
 
 valid_placement :: fn board, coord ->
-    valid_coord(coord) and board_at(board, coord) == Piece.Empty and any' dirs, (fn delta ->
+    (valid_coord(coord)
+     and board_at(board, coord) == Piece.Empty
+     and any' dirs, fn delta ->
         p :: coord + delta
         valid_coord(p) and board_at(board, p) != Piece.Empty
-    end)
+    end
+   )
 end
 
 board_is_full :: fn board ->
@@ -54,7 +57,7 @@ board_is_full :: fn board ->
     loop x < 8 do
         y := 0
         loop y < 8 do
-            if board[y][x] == Piece.Empty do ret false end
+            if board_at(board, (x, y)) == Piece.Empty do ret false end
             y += 1
         end
         x += 1
@@ -158,14 +161,15 @@ start :: fn do
 
     y := 0
     loop y < 8 do
-        board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
+        board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
+                            ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
         y += 1
     end
 
-    board[3][3] = Piece.Black
-    board[4][3] = Piece.White
-    board[3][4] = Piece.White
-    board[4][4] = Piece.Black
+    board_place' board, (3, 3), Piece.Black
+    board_place' board, (4, 3), Piece.White
+    board_place' board, (3, 4), Piece.White
+    board_place' board, (4, 4), Piece.Black
 
     draw_board :: fn pos, scale, state do
         top_left_offset :: pos + (7., 7.) * scale
