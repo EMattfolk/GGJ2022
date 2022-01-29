@@ -50,8 +50,18 @@ board_at :: fn board, coord ->
     board[coord[1]][coord[0]]
 end
 
-board_place :: fn board, coord, piece ->
-    board[coord[1]][coord[0]] = piece
+board_place :: fn state, coord, piece ->
+    x :: coord[0]
+    y :: coord[1]
+    current :: state.board[y][x]
+    if current == Piece.Empty do
+        case piece do
+            Black -> state.animation[y][x] = 0.0 end
+            White -> state.animation[y][x] = 1.0 end
+            Empty -> end
+        end
+    end
+    state.board[y][x] = piece
 end
 
 valid_placement :: fn board, coord ->
@@ -107,23 +117,23 @@ board_to_screen :: fn offset, size, coord ->
     offset + size * (as_float(coord[0]), as_float(coord[1]))
 end
 
-flip_if_matches :: fn board, coord, piece, dir ->
+flip_if_matches :: fn state, coord, piece, dir ->
     if (not valid_coord(coord))
-    or board_at(board, coord) == Piece.Empty do ret false end
+    or board_at(state.board, coord) == Piece.Empty do ret false end
 
-    if board_at(board, coord) == other_color(piece)
-    or flip_if_matches(board, coord + dir, piece, dir) do
-        board_place(board, coord, piece)
+    if board_at(state.board, coord) == other_color(piece)
+    or flip_if_matches(state, coord + dir, piece, dir) do
+        board_place(state, coord, piece)
         true
     else
         false
     end
 end
 
-place_piece :: fn board, coord, piece ->
-    success :: case board_at(board, coord) do
+place_piece :: fn state, coord, piece ->
+    success :: case board_at(state.board, coord) do
         Empty ->
-            board_place(board, coord, piece)
+            board_place(state, coord, piece)
             true
         end
         White -> false end
@@ -132,7 +142,7 @@ place_piece :: fn board, coord, piece ->
     if not success do ret success end
 
     dirs -> for_each' fn dir do
-        flip_if_matches' board, coord + dir, piece, dir
+        flip_if_matches' state, coord + dir, piece, dir
     end
 
     audio : sfx.Sound : list.random_choice(place_sfx)
@@ -148,6 +158,7 @@ end
 
 State :: blob {
     board: [[Piece]],
+    animation: [[float]],
     turn: int,
     coord: Maybe, // (Int, Int)
 }
@@ -180,9 +191,10 @@ start :: fn do
             y := 0
             loop y < 8 do
                 offset :: board_to_screen' top_left_offset, size, (x, y)
+                anim :: floor' state.animation[y][x] * 5.9999
                 case board_at' state.board, (x, y) do
-                    Black -> piece_ss.draw' gfx.white, 0, offset, 0.0, scale end
-                    White -> piece_ss.draw' gfx.white, 5, offset, 0.0, scale end
+                    Black -> piece_ss.draw' gfx.white, anim, offset, 0.0, scale end
+                    White -> piece_ss.draw' gfx.white, anim, offset, 0.0, scale end
                     Empty -> end
                 end
 
@@ -204,7 +216,7 @@ start :: fn do
     end
 
     pressed := false
-    update_board :: fn pos, scale, state ->
+    update_board :: fn delta, pos, scale, state ->
         top_left_offset :: pos + (13., 13.)
         size :: (grid_size, grid_size) * scale
 
@@ -212,11 +224,11 @@ start :: fn do
         coord :: if valid_placement' state.board, active do
             if state.turn == 0
             and pressed
-            and place_piece' state.board, active, Piece.White do
+            and place_piece' state, active, Piece.White do
                 state.turn = 1
             else if state.turn == 1
                  and pressed
-                 and place_piece' state.board, active, Piece.Black do
+                 and place_piece' state, active, Piece.Black do
                 state.turn = 0
             end
             Maybe.Just active
@@ -224,32 +236,51 @@ start :: fn do
             Maybe.Nothing
         end
 
-        State { board: state.board, coord: coord, turn: state.turn }
+        // Update animation frames
+        y := 0
+        loop y < 8 do
+            x := 0
+            loop x < 8 do
+                target :: if state.board[y][x] == Piece.White do 1.0 else 0.0 end
+                current :: state.animation[y][x]
+                diff :: target - current
+                if abs(diff) < delta do
+                    state.animation[y][x] += diff
+                else do
+                    state.animation[y][x] += sign(diff) * delta
+                end
+                x += 1
+            end
+            y += 1
+        end
+
+        State { board: state.board, animation: state.animation, coord: coord, turn: state.turn }
     end
 
     scale :: (2., 2.)
     pos :: (gfx.screenSizef() - board_img.getSize() * scale) * (0.5, 0.5)
 
-    state := State { board: [], coord: Maybe.Nothing, turn: 0 }
+    state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0 }
 
     y := 0
     loop y < 8 do
         state.board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
                             ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
+        state.animation -> list.push' [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         y += 1
     end
 
-    board_place' state.board, (3, 3), Piece.Black
-    board_place' state.board, (4, 3), Piece.White
-    board_place' state.board, (3, 4), Piece.White
-    board_place' state.board, (4, 4), Piece.Black
+    board_place' state, (3, 3), Piece.Black
+    board_place' state, (4, 3), Piece.White
+    board_place' state, (3, 4), Piece.White
+    board_place' state, (4, 4), Piece.Black
 
     scene := Scene.Menu
 
     love.update = fn delta do
         case scene do
             Game state ->
-                state :: update_board' pos, scale, state
+                state :: update_board' delta, pos, scale, state
                 scene = Scene.Game state // Update the state
             end
             Menu -> end
