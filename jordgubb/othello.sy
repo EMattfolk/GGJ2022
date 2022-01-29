@@ -50,7 +50,7 @@ board_at :: fn board, coord ->
     board[coord[1]][coord[0]]
 end
 
-board_place :: fn state, coord, piece ->
+board_place :: fn state, coord, piece, stagger ->
     x :: coord[0]
     y :: coord[1]
     current :: state.board[y][x]
@@ -61,6 +61,14 @@ board_place :: fn state, coord, piece ->
             Empty -> end
         end
     end
+
+    if current == Piece.White and state.animation[y][x] == 1.0 do
+        state.animation[y][x] += stagger
+    else do if current == Piece.Black and state.animation[y][x] == 0.0 do
+        state.animation[y][x] -= stagger
+    end
+    end
+
     state.board[y][x] = piece
 end
 
@@ -117,13 +125,13 @@ board_to_screen :: fn offset, size, coord ->
     offset + size * (as_float(coord[0]), as_float(coord[1]))
 end
 
-flip_if_matches :: fn state, coord, piece, dir ->
+flip_if_matches :: fn state, coord, piece, dir, stagger ->
     if (not valid_coord(coord))
     or board_at(state.board, coord) == Piece.Empty do ret false end
 
     if board_at(state.board, coord) == other_color(piece)
-    or flip_if_matches(state, coord + dir, piece, dir) do
-        board_place(state, coord, piece)
+    or flip_if_matches(state, coord + dir, piece, dir, stagger + 0.25) do
+        board_place(state, coord, piece, stagger)
         true
     else
         false
@@ -133,7 +141,7 @@ end
 place_piece :: fn state, coord, piece ->
     success :: case board_at(state.board, coord) do
         Empty ->
-            board_place(state, coord, piece)
+            board_place(state, coord, piece, 0.0)
             true
         end
         White -> false end
@@ -142,7 +150,7 @@ place_piece :: fn state, coord, piece ->
     if not success do ret success end
 
     dirs -> for_each' fn dir do
-        flip_if_matches' state, coord + dir, piece, dir
+        flip_if_matches' state, coord + dir, piece, dir, 0.0
     end
 
     audio : sfx.Sound : list.random_choice(place_sfx)
@@ -191,7 +199,7 @@ start :: fn do
             y := 0
             loop y < 8 do
                 offset :: board_to_screen' top_left_offset, size, (x, y)
-                anim :: floor' state.animation[y][x] * 5.9999
+                anim :: floor' clamp(state.animation[y][x], 0.0, 1.0) * 5.0
                 case board_at' state.board, (x, y) do
                     Black -> piece_ss.draw' gfx.white, anim, offset, 0.0, scale end
                     White -> piece_ss.draw' gfx.white, anim, offset, 0.0, scale end
@@ -244,10 +252,10 @@ start :: fn do
                 target :: if state.board[y][x] == Piece.White do 1.0 else 0.0 end
                 current :: state.animation[y][x]
                 diff :: target - current
-                if abs(diff) < delta do
+                if abs(diff) < delta * 2.0 do
                     state.animation[y][x] += diff
                 else do
-                    state.animation[y][x] += sign(diff) * delta
+                    state.animation[y][x] += sign(diff) * delta * 2.0
                 end
                 x += 1
             end
@@ -270,10 +278,10 @@ start :: fn do
         y += 1
     end
 
-    board_place' state, (3, 3), Piece.Black
-    board_place' state, (4, 3), Piece.White
-    board_place' state, (3, 4), Piece.White
-    board_place' state, (4, 4), Piece.Black
+    board_place' state, (3, 3), Piece.Black, 0.0
+    board_place' state, (4, 3), Piece.White, 0.0
+    board_place' state, (3, 4), Piece.White, 0.0
+    board_place' state, (4, 4), Piece.Black, 0.0
 
     scene := Scene.Menu
 
