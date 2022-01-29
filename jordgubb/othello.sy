@@ -226,8 +226,10 @@ start :: fn do
     love.draw = fn do
         draw_board' pos, scale, state
         if board_is_full' board do
+            text_pos :: (100.0, 100.0)
+
             gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
-            bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
+            bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
             num_pieces :: count_pieces' board
             print' num_pieces
             message :: if num_pieces[0] == num_pieces[1] do
@@ -238,7 +240,7 @@ start :: fn do
                     "White wins!"
                 end
             end
-            smallFont.drawText' gfx.rgb(1., 1., 1.), message, (110.0, 210.0)
+            smallFont.drawText' gfx.rgb(1., 1., 1.), message, text_pos + (10.0, 110.0)
         end
     end
 
