@@ -228,7 +228,17 @@ start :: fn do
         if board_is_full' board do
             gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
             bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", (100.0, 100.0)
-            smallFont.drawText' gfx.rgb(1., 1., 1.), as_str(count_pieces' board), (110.0, 210.0)
+            num_pieces :: count_pieces' board
+            print' num_pieces
+            message :: if num_pieces[0] == num_pieces[1] do
+                "Tie!"
+            else do if num_pieces[0] > num_pieces[1] do
+                    "Black wins!"
+                else do
+                    "White wins!"
+                end
+            end
+            smallFont.drawText' gfx.rgb(1., 1., 1.), message, (110.0, 210.0)
         end
     end
 
