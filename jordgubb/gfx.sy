@@ -134,6 +134,11 @@ createFont :: fn f: l.Font -> Font
     }
 end
 
+newFont :: fn path: str, size: int -> Font
+    font :: love.graphics.newFont' path, size
+    createFont' font
+end
+
 Image :: blob {
     img: *,
     getWidth: fn -> float,
