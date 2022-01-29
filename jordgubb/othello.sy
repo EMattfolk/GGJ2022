@@ -181,6 +181,7 @@ State :: blob {
     animation: [[float]],
     turn: int,
     coord: Maybe, // (Int, Int)
+    ai: bool,
 }
 
 place_sfx := []
@@ -258,18 +259,25 @@ start :: fn do
         top_left_offset :: pos + (13., 13.)
         size :: (grid_size, grid_size) * scale
 
+
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         to_place :: if state.turn == 0 do Piece.Black else Piece.White end
-        coord :: if valid_placement' state.board, active, to_place do
-            if pressed
-            and place_piece' state, active, to_place do
-                state.turn = 1 - state.turn
-                Maybe.Nothing
-            else
-                Maybe.Just active
-            end
-        else
+        coord :: if state.ai and state.turn == 1 do
+
+
             Maybe.Nothing
+        else do
+            if valid_placement' state.board, active, to_place do
+                if pressed
+                and place_piece' state, active, to_place do
+                    state.turn = 1 - state.turn
+                    Maybe.Nothing
+                else
+                    Maybe.Just active
+                end
+            else
+                Maybe.Nothing
+            end
         end
 
         // Update animation frames
@@ -290,7 +298,7 @@ start :: fn do
             y += 1
         end
 
-        State { board: state.board, animation: state.animation, coord: coord, turn: state.turn }
+        State { board: state.board, animation: state.animation, coord: coord, turn: state.turn, ai: state.ai }
     end
 
     scale :: (2., 2.)
@@ -298,7 +306,7 @@ start :: fn do
     pos :: center + (0., 10.)
 
     inital_state :: fn ->
-        state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0 }
+        state := State { board: [], animation: [], coord: Maybe.Nothing, turn: 0, ai: false }
         y := 0
         loop y < 8 do
             state.board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
@@ -313,8 +321,6 @@ start :: fn do
 
         state
     end
-
-    state := inital_state'
 
     scene := Scene.Menu
 
@@ -367,11 +373,13 @@ start :: fn do
             Game state ->
                 if game_is_over' state do
                     state :: inital_state'
+                    state.ai = key == "a"
                     scene = Scene.Game state
                 end
             end
             Menu ->
                 state :: inital_state'
+                state.ai = key == "a"
                 scene = Scene.Game state
             end
         end
