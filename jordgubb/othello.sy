@@ -4,6 +4,13 @@ from gfx use (stableRandomColor as rcol)
 use input
 use sfx
 
+// TODO:
+//  - Some particles when you flip, maybe even screen shake?
+//  - A menu or intro screen?
+//  - Fix the sounds
+//  - Add some music
+//  - Add in an AI?
+
 Piece :: enum
     Black,
     White,
