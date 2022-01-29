@@ -35,7 +35,7 @@ any :: fn l: [*A], pred: fn *A -> bool -> bool
 end
 
 valid_placement :: fn board, coord ->
-    valid_coord(coord) and any' dirs, (fn delta ->
+    valid_coord(coord) and board[coord[1]][coord[0]] == Piece.Empty and any' dirs, (fn delta ->
         p :: coord + delta
         valid_coord(p) and board[coord[1] + delta[1]][coord[0] + delta[0]] != Piece.Empty
     end)
