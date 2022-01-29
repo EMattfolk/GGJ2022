@@ -11,6 +11,11 @@ use sfx
 //  - Add some music
 //  - Add in an AI?
 
+Scene :: enum
+    Game State,
+    Menu,
+end
+
 Piece :: enum
     Black,
     White,
@@ -238,32 +243,55 @@ start :: fn do
     board_place' state.board, (3, 4), Piece.White
     board_place' state.board, (4, 4), Piece.Black
 
+    scene := Scene.Menu
+
     love.update = fn delta do
-        state = update_board' pos, scale, state
+        case scene do
+            Game state ->
+                state :: update_board' pos, scale, state
+                scene = Scene.Game state // Update the state
+            end
+            Menu -> end
+        end
         pressed = false
     end
 
     love.draw = fn do
-        draw_board' pos, scale, state
-        if board_is_full' state.board do
-            text_pos :: (100.0, 100.0)
+        case scene do
+            Game state ->
+                draw_board' pos, scale, state
+                if board_is_full' state.board do
+                    text_pos :: (100.0, 100.0)
 
-            gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
-            bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
-            num_pieces :: count_pieces' state.board
-            message :: if num_pieces[0] == num_pieces[1] do
-                "Tie!"
-            else do if num_pieces[0] > num_pieces[1] do
-                    "Black wins!"
-                else do
-                    "White wins!"
+                    gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
+                    bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
+                    num_pieces :: count_pieces' state.board
+                    message :: if num_pieces[0] == num_pieces[1] do
+                        "Tie!"
+                    else do if num_pieces[0] > num_pieces[1] do
+                            "Black wins!"
+                        else do
+                            "White wins!"
+                        end
+                    end
+                    smallFont.drawText' gfx.rgb(1., 1., 1.), message, text_pos + (10.0, 110.0)
                 end
             end
-            smallFont.drawText' gfx.rgb(1., 1., 1.), message, text_pos + (10.0, 110.0)
+            Menu ->
+            end
         end
     end
 
     love.keypressed = fn key, scancode, repeat do
+        case scene do
+            Game state ->
+            end
+            Menu ->
+                if key == "space" or key == "return" do
+                    scene = Scene.Game state
+                end
+            end
+        end
     end
 
     love.keyreleased = fn key, scancode do
