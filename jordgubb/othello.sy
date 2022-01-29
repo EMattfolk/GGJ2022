@@ -142,6 +142,7 @@ Maybe :: enum
 end
 
 State :: blob {
+    board: [[Piece]],
     turn: int,
     coord: Maybe, // (Int, Int)
 }
@@ -164,21 +165,6 @@ start :: fn do
     black_img :: gfx.newImage' "res/black.png"
     white_img :: gfx.newImage' "res/white.png"
 
-    // TODO[et]: Move this into state
-    board :: [ ]
-
-    y := 0
-    loop y < 8 do
-        board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
-                            ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
-        y += 1
-    end
-
-    board_place' board, (3, 3), Piece.Black
-    board_place' board, (4, 3), Piece.White
-    board_place' board, (3, 4), Piece.White
-    board_place' board, (4, 4), Piece.Black
-
     draw_board :: fn pos, scale, state do
         top_left_offset :: pos + (7., 7.) * scale
         size :: (grid_size, grid_size) * scale
@@ -188,7 +174,7 @@ start :: fn do
             y := 0
             loop y < 8 do
                 offset :: board_to_screen' top_left_offset, size, (x, y)
-                case board_at' board, (x, y) do
+                case board_at' state.board, (x, y) do
                     Black -> black_img.draw(offset, 0.0, scale) end
                     White -> white_img.draw(offset, 0.0, scale) end
                     Empty -> end
@@ -217,14 +203,14 @@ start :: fn do
         size :: (grid_size, grid_size) * scale
 
         active :: screen_to_board' top_left_offset, size, input.mousePos()
-        coord :: if valid_placement' board, active do
+        coord :: if valid_placement' state.board, active do
             if state.turn == 0
             and pressed
-            and place_piece' board, active, Piece.White do
+            and place_piece' state.board, active, Piece.White do
                 state.turn = 1
             else if state.turn == 1
                  and pressed
-                 and place_piece' board, active, Piece.Black do
+                 and place_piece' state.board, active, Piece.Black do
                 state.turn = 0
             end
             Maybe.Just active
@@ -232,13 +218,26 @@ start :: fn do
             Maybe.Nothing
         end
 
-        State { coord: coord, turn: state.turn }
+        State { board: state.board, coord: coord, turn: state.turn }
     end
 
     scale :: (2., 2.)
     pos :: (gfx.screenSizef() - board_img.getSize() * scale) * (0.5, 0.5)
 
-    state := State { coord: Maybe.Nothing, turn: 0 }
+    state := State { board: [], coord: Maybe.Nothing, turn: 0 }
+
+    y := 0
+    loop y < 8 do
+        state.board -> list.push' [Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty
+                            ,Piece.Empty, Piece.Empty, Piece.Empty, Piece.Empty]
+        y += 1
+    end
+
+    board_place' state.board, (3, 3), Piece.Black
+    board_place' state.board, (4, 3), Piece.White
+    board_place' state.board, (3, 4), Piece.White
+    board_place' state.board, (4, 4), Piece.Black
+
     love.update = fn delta do
         state = update_board' pos, scale, state
         pressed = false
@@ -246,12 +245,12 @@ start :: fn do
 
     love.draw = fn do
         draw_board' pos, scale, state
-        if board_is_full' board do
+        if board_is_full' state.board do
             text_pos :: (100.0, 100.0)
 
             gfx.drawRect' gfx.rgba(0., 0., 0., 0.1), (0., 0.), gfx.screenSizef'
             bigFont.drawText' gfx.rgb(1., 1., 1.), "Othello", text_pos
-            num_pieces :: count_pieces' board
+            num_pieces :: count_pieces' state.board
             message :: if num_pieces[0] == num_pieces[1] do
                 "Tie!"
             else do if num_pieces[0] > num_pieces[1] do
