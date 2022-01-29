@@ -34,18 +34,18 @@ any :: fn l: [*A], pred: fn *A -> bool -> bool
     result
 end
 
-get_board :: fn board, coord ->
+board_at :: fn board, coord ->
     board[coord[1]][coord[0]]
 end
 
-set_board :: fn board, coord, piece ->
+board_place :: fn board, coord, piece ->
     board[coord[1]][coord[0]] = piece
 end
 
 valid_placement :: fn board, coord ->
-    valid_coord(coord) and get_board(board, coord) == Piece.Empty and any' dirs, (fn delta ->
+    valid_coord(coord) and board_at(board, coord) == Piece.Empty and any' dirs, (fn delta ->
         p :: coord + delta
-        valid_coord(p) and get_board(board, p) != Piece.Empty
+        valid_coord(p) and board_at(board, p) != Piece.Empty
     end)
 end
 
@@ -69,7 +69,7 @@ count_pieces :: fn board ->
     loop x < 8 do
         y := 0
         loop y < 8 do
-            piece :: get_board(board, (x, y))
+            piece :: board_at(board, (x, y))
             if piece == Piece.White do
                 whites += 1
             else do if piece == Piece.Black do
@@ -94,11 +94,11 @@ end
 
 flip_if_matches :: fn board, coord, piece, dir ->
     if (not valid_coord(coord))
-    or get_board(board, coord) == Piece.Empty do ret false end
+    or board_at(board, coord) == Piece.Empty do ret false end
 
-    if get_board(board, coord) == other_color(piece)
+    if board_at(board, coord) == other_color(piece)
     or flip_if_matches(board, coord + dir, piece, dir) do
-        set_board(board, coord, piece)
+        board_place(board, coord, piece)
         true
     else
         false
@@ -106,9 +106,9 @@ flip_if_matches :: fn board, coord, piece, dir ->
 end
 
 place_piece :: fn board, coord, piece ->
-    success :: case get_board(board, coord) do
+    success :: case board_at(board, coord) do
         Empty ->
-            set_board(board, coord, piece)
+            board_place(board, coord, piece)
             true
         end
         White -> false end
@@ -176,7 +176,7 @@ start :: fn do
             y := 0
             loop y < 8 do
                 offset :: board_to_screen' top_left_offset, size, (x, y)
-                case get_board' board, (x, y) do
+                case board_at' board, (x, y) do
                     Black -> black_img.draw(offset, 0.0, scale) end
                     White -> white_img.draw(offset, 0.0, scale) end
                     Empty -> end
