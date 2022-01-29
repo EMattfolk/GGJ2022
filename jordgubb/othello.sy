@@ -19,10 +19,26 @@ other_color :: fn piece ->
 end
 
 grid_size :: 31.
+dirs :: [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1)]
 
 valid_coord :: fn coord ->
     (0 <= coord[0] and coord[0] < 8 and
      0 <= coord[1] and coord[1] < 8)
+end
+
+any :: fn l: [*A], pred: fn *A -> bool -> bool
+    result := false
+    l -> for_each' fn x ->
+        result = result or pred' x
+    end
+    result
+end
+
+valid_placement :: fn board, coord ->
+    valid_coord(coord) and any' dirs, (fn delta ->
+        p :: coord + delta
+        valid_coord(p) and board[coord[1] + delta[1]][coord[0] + delta[0]] != Piece.Empty
+    end)
 end
 
 screen_to_board :: fn offset, size, mouseCoords ->
@@ -58,7 +74,6 @@ place_piece :: fn board, coord, piece ->
     end
     if not success do ret success end
 
-    dirs :: [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1)]
     dirs -> for_each' fn dir do
         flip_if_matches' board, coord + dir, piece, dir
     end
@@ -148,8 +163,7 @@ start :: fn do
         size :: (grid_size, grid_size) * scale
 
         active :: screen_to_board' top_left_offset, size, input.mousePos()
-        coord :: if 0 <= active[0] and active[0] < 8
-                and 0 <= active[1] and active[1] < 8 do
+        coord :: if valid_placement' board, active do
             if state.turn == 0
             and pressed
             and place_piece' board, active, Piece.White do
