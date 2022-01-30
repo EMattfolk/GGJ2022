@@ -6,7 +6,6 @@ use sfx
 
 // TODO:
 //  - Fix the sounds
-//  - Add some music
 //  - Add in a decent AI
 
 Scene :: enum
@@ -51,20 +50,22 @@ end
 board_place :: fn state: State, coord, piece, stagger ->
     x :: coord[0]
     y :: coord[1]
-    current :: state.board[y][x]
-    if current == Piece.Empty do
-        case piece do
-            Black -> state.animation[y][x] = 0.0 end
-            White -> state.animation[y][x] = 1.0 end
-            Empty -> end
+    if list.len(state.animation) > 0 do
+        current :: state.board[y][x]
+        if current == Piece.Empty do
+            case piece do
+                Black -> state.animation[y][x] = 0.0 end
+                White -> state.animation[y][x] = 1.0 end
+                Empty -> end
+            end
         end
-    end
 
-    if current == Piece.White and state.animation[y][x] == 1.0 do
-        state.animation[y][x] += stagger
-    else do if current == Piece.Black and state.animation[y][x] == 0.0 do
-        state.animation[y][x] -= stagger
-    end
+        if current == Piece.White and state.animation[y][x] == 1.0 do
+            state.animation[y][x] += stagger
+        else do if current == Piece.Black and state.animation[y][x] == 0.0 do
+            state.animation[y][x] -= stagger
+        end
+        end
     end
 
     state.board[y][x] = piece
@@ -119,7 +120,19 @@ ai_turn :: fn state ->
         end
         x += 1
     end
-    moves
+    best_move := Maybe.Nothing
+    best_move_score := 0
+
+    moves -> for_each(fn move do
+        copy :: copy_state' state
+        place_piece' copy, move, to_place
+        score :: count_pieces(copy.board)[1]
+        if score > best_move_score do
+            best_move = Maybe.Just move
+            best_move_score = score
+        end
+    end)
+    best_move
 end
 
 count_pieces :: fn board ->
@@ -199,6 +212,24 @@ State :: blob {
     ai: bool,
 }
 
+copy_state :: fn state ->
+    board_copy :: []
+    x := 0
+    loop x < 8 do
+        y := 0
+        l :: []
+        loop y < 8 do
+            list.push' l, board_at' state.board, (x, y)
+            y += 1
+        end
+        list.push' board_copy, l
+        x += 1
+    end
+
+
+    State { board: board_copy, animation: [], turn: 0, coord: Maybe.Nothing, ai: true }
+end
+
 place_sfx := []
 
 start :: fn do
@@ -211,7 +242,7 @@ start :: fn do
         sfx.newSound("res/place005.wav", false, sfx.SoundType.Static),
     ]
 
-    sfx.newSound("res/boo.ogg", true, sfx.SoundType.Stream).playp' (0.1, 0.0), (1.0, 0.0)
+    sfx.newSound("res/boo.ogg", true, sfx.SoundType.Stream).playp' (0.05, 0.0), (1.0, 0.0)
 
     piece_img :: gfx.newImage' "res/piece.png"
     piece_ss :: gfx.newImplicitSpriteSheet' piece_img, (26, 26)
@@ -235,7 +266,6 @@ start :: fn do
                     White -> piece_ss.draw' gfx.white, anim, offset, 0.0, scale end
                     Empty -> end
                 end
-
                 y += 1
             end
             x += 1
@@ -280,14 +310,13 @@ start :: fn do
         active :: screen_to_board' top_left_offset, size, input.mousePos()
         to_place :: if state.turn == 0 do Piece.Black else Piece.White end
         coord :: if state.ai and state.turn == 1 do
-            moves :: ai_turn' state
-
-            if 0 < list.len' moves do
-                move :: moves[0]
-                place_piece' state, move, to_place
-                state.turn = 1 - state.turn
+            case ai_turn' state do
+                Just move ->
+                    place_piece' state, move, to_place
+                    state.turn = 1 - state.turn
+                end
+                else do end
             end
-
             Maybe.Nothing
         else do
             if valid_placement' state.board, active, to_place do
